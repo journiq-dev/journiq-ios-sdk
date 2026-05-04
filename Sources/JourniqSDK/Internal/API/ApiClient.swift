@@ -58,6 +58,14 @@ final class ApiClient: @unchecked Sendable {
         return try await get("/v1/sdk/app")
     }
 
+    func setIdentity(_ request: SetIdentityRequest) async throws -> SuccessResponse {
+        return try await post("/v1/sdk/identity", body: request)
+    }
+
+    func setUserProperties(_ request: SetUserPropertiesRequest) async throws -> SuccessResponse {
+        return try await post("/v1/sdk/user-properties", body: request)
+    }
+
     // MARK: - HTTP Helpers
 
     private func get<T: Decodable>(_ path: String) async throws -> T {
@@ -87,7 +95,7 @@ final class ApiClient: @unchecked Sendable {
     private func applyHeaders(_ request: inout URLRequest) {
         request.setValue(config.apiKey, forHTTPHeaderField: "X-Journiq-Api-Key")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("JourniqSDK-iOS/0.1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("JourniqSDK-iOS/0.2.0", forHTTPHeaderField: "User-Agent")
     }
 
     private func buildURL(_ path: String) throws -> URL {

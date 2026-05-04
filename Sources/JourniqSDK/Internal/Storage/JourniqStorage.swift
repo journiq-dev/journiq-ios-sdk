@@ -19,6 +19,11 @@ final class JourniqStorage: @unchecked Sendable {
         set { defaults.set(newValue.timeIntervalSince1970, forKey: Keys.lastFlush) }
     }
 
+    var userId: String? {
+        get { defaults.string(forKey: Keys.userId) }
+        set { defaults.set(newValue, forKey: Keys.userId) }
+    }
+
     func clear() {
         Keys.all.forEach { defaults.removeObject(forKey: $0) }
     }
@@ -26,6 +31,7 @@ final class JourniqStorage: @unchecked Sendable {
     private enum Keys {
         static let deferredChecked = "journiq_deferred_checked"
         static let lastFlush = "journiq_last_flush"
-        static let all = [deferredChecked, lastFlush]
+        static let userId = "journiq_user_id"
+        static let all = [deferredChecked, lastFlush, userId]
     }
 }

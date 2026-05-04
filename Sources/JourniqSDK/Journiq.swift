@@ -71,6 +71,37 @@ public final class Journiq: @unchecked Sendable {
         shared?.eventQueue.onAppForegrounded()
     }
 
+    // MARK: - Identity & User Properties
+
+    /// Set user identity for cross-device attribution.
+    /// - Parameter userId: A unique identifier for the user in your system.
+    public static func setIdentity(_ userId: String) {
+        let sdk = current
+        sdk.storage.userId = userId
+        Task {
+            _ = try? await sdk.apiClient.setIdentity(SetIdentityRequest(userId: userId))
+        }
+    }
+
+    /// Clear user identity (logout).
+    public static func logout() {
+        current.storage.userId = nil
+    }
+
+    /// Set custom properties on the current user's profile.
+    /// Properties are merged with existing values. Set a value to `nil` to remove it.
+    /// - Parameter properties: Key-value pairs to set on the user profile.
+    public static func setUserProperties(_ properties: [String: Any?]) async throws {
+        let sdk = current
+        guard let userId = sdk.storage.userId else {
+            logger.warning("setUserProperties called without a user identity. Call setIdentity first.")
+            return
+        }
+        let codableProps = properties.mapValues { AnyCodable($0) }
+        let request = SetUserPropertiesRequest(userId: userId, properties: codableProps)
+        _ = try await sdk.apiClient.setUserProperties(request)
+    }
+
     // MARK: - Internal
 
     static var current: Journiq {

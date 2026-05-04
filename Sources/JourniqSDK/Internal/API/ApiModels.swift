@@ -37,3 +37,48 @@ struct BatchResult: Decodable {
 struct EventCreatedResult: Decodable {
     let id: String
 }
+
+struct SetIdentityRequest: Encodable {
+    let userId: String
+}
+
+struct SetUserPropertiesRequest: Encodable {
+    let userId: String
+    let properties: [String: AnyCodable]
+}
+
+struct SuccessResponse: Decodable {
+    let success: Bool
+    let message: String?
+}
+
+/// A type-erased Codable wrapper for arbitrary JSON values.
+struct AnyCodable: Encodable {
+    let value: Any?
+
+    init(_ value: Any?) {
+        self.value = value
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch value {
+        case nil:
+            try container.encodeNil()
+        case let bool as Bool:
+            try container.encode(bool)
+        case let int as Int:
+            try container.encode(int)
+        case let double as Double:
+            try container.encode(double)
+        case let string as String:
+            try container.encode(string)
+        case let array as [Any?]:
+            try container.encode(array.map { AnyCodable($0) })
+        case let dict as [String: Any?]:
+            try container.encode(dict.mapValues { AnyCodable($0) })
+        default:
+            try container.encodeNil()
+        }
+    }
+}
