@@ -1,2 +1,5 @@
 git tag -a v0.1.2 -m "Release 0.1.2"
 git push origin v0.1.2
+
+ pod trunk register dev@journiq.io 'JourniqSDK'            
+pod trunk push JourniqSDK.podspec
