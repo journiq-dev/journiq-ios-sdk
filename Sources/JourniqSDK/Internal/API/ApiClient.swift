@@ -17,10 +17,8 @@ final class ApiClient: @unchecked Sendable {
         self.session = URLSession(configuration: urlConfig)
 
         self.encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
 
         self.decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
     }
 
     // MARK: - Public Endpoints
@@ -112,7 +110,7 @@ final class ApiClient: @unchecked Sendable {
 
         let (data, response) = try await session.data(for: request)
         try validateResponse(response, data: data)
-        return try decoder.decode(T.self, from: data)
+        return try decodeUnwrapping(data)
     }
 
     private func post<B: Encodable, T: Decodable>(_ path: String, body: B) async throws -> T {
@@ -125,6 +123,15 @@ final class ApiClient: @unchecked Sendable {
 
         let (data, response) = try await session.data(for: request)
         try validateResponse(response, data: data)
+        return try decodeUnwrapping(data)
+    }
+
+    /// Attempts to decode from `{ data: T }` wrapper first, then falls back to direct decode.
+    private func decodeUnwrapping<T: Decodable>(_ data: Data) throws -> T {
+        if let wrapped = try? decoder.decode(ApiResponse<T>.self, from: data),
+           let unwrapped = wrapped.data {
+            return unwrapped
+        }
         return try decoder.decode(T.self, from: data)
     }
 

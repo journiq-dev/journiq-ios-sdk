@@ -6,7 +6,7 @@ public struct DeepLink: Codable, Sendable {
     public let appId: String
     public let organizationId: String
     public let shortCode: String
-    public let shortUrl: String
+    public let shortUrl: String?
     public let webUrl: String
     public let title: String?
     public let description: String?
@@ -17,9 +17,11 @@ public struct DeepLink: Codable, Sendable {
     public let utmCampaign: String?
     public let utmTerm: String?
     public let utmContent: String?
-    public let status: String
+    public let isActive: Bool?
+    public let domain: String?
     public let totalClicks: Int?
     public let uniqueClicks: Int?
-    public let createdAt: String
-    public let updatedAt: String
+    public let clickCount: Int?
+    public let createdAt: String?
+    public let updatedAt: String?
 }

@@ -24,6 +24,7 @@ struct EventItem: Encodable {
 }
 
 struct ApiResponse<T: Decodable>: Decodable {
+    let success: Bool?
     let data: T?
     let message: String?
     let statusCode: Int?

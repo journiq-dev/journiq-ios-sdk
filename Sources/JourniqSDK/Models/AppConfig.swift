@@ -7,7 +7,11 @@ public struct AppConfig: Codable, Sendable {
     public let platform: String
     public let bundleId: String?
     public let packageName: String?
-    public let status: String
+    public let iosUrlScheme: String?
+    public let androidUrlScheme: String?
+    public let appStoreUrl: String?
+    public let playStoreUrl: String?
+    public let websiteUrl: String?
 }
 
 /// Link click statistics.
