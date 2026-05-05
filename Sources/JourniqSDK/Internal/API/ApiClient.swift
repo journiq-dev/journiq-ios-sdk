@@ -66,6 +66,42 @@ final class ApiClient: @unchecked Sendable {
         return try await post("/v1/sdk/user-properties", body: request)
     }
 
+    // MARK: - Notifications
+
+    func getNotifications(userId: String, page: Int = 1, limit: Int = 20, unreadOnly: Bool = false) async throws -> NotificationsResponse {
+        var path = "/v1/sdk/notifications?userId=\(userId)&page=\(page)&limit=\(limit)"
+        if unreadOnly { path += "&unreadOnly=true" }
+        return try await get(path)
+    }
+
+    func markNotificationRead(id: String, userId: String) async throws {
+        let url = try buildURL("/v1/sdk/notifications/\(id)/read")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        applyHeaders(&request)
+        request.httpBody = try encoder.encode(["userId": userId])
+
+        let (data, response) = try await session.data(for: request)
+        try validateResponse(response, data: data)
+    }
+
+    func getUnreadNotificationCount(userId: String) async throws -> Int {
+        let response: UnreadCountResponse = try await get("/v1/sdk/notifications/unread-count?userId=\(userId)")
+        return response.count
+    }
+
+    // MARK: - Push Token
+
+    func registerDeviceToken(userId: String, token: String, platform: String) async throws {
+        struct TokenRequest: Encodable {
+            let userId: String
+            let token: String
+            let platform: String
+        }
+        let _: SuccessResponse = try await post("/v1/sdk/device-token", body: TokenRequest(userId: userId, token: token, platform: platform))
+    }
+
     // MARK: - HTTP Helpers
 
     private func get<T: Decodable>(_ path: String) async throws -> T {
@@ -119,6 +155,7 @@ final class ApiClient: @unchecked Sendable {
 /// Errors thrown by the Journiq SDK.
 public enum JourniqError: Error, LocalizedError {
     case notInitialized
+    case noIdentity
     case invalidURL(String)
     case invalidResponse
     case httpError(statusCode: Int, message: String)
@@ -128,6 +165,8 @@ public enum JourniqError: Error, LocalizedError {
         switch self {
         case .notInitialized:
             return "Journiq SDK not initialized. Call Journiq.configure(apiKey:) first."
+        case .noIdentity:
+            return "No user identity set. Call Journiq.setIdentity() first."
         case .invalidURL(let path):
             return "Invalid URL: \(path)"
         case .invalidResponse:

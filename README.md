@@ -1,6 +1,6 @@
 # Journiq iOS SDK
 
-Official iOS SDK for [Journiq](https://getjourniq.com) — deep linking, deferred deep links, attribution, and event tracking for iOS apps.
+Official iOS SDK for [Journiq](https://getjourniq.com) — deep linking, deferred deep links, attribution, event tracking, in-app notifications, and push for iOS apps.
 
 ## Requirements
 
@@ -19,14 +19,14 @@ Add the package in Xcode:
    ```
    https://github.com/journiq-dev/journiq-ios-sdk
    ```
-3. Select version rule: **Up to Next Major** from `0.1.0`
+3. Select version rule: **Up to Next Major** from `0.2.1`
 4. Add `JourniqSDK` to your target
 
 Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/journiq-dev/journiq-ios-sdk", from: "0.1.0"),
+    .package(url: "https://github.com/journiq-dev/journiq-ios-sdk", from: "0.2.1"),
 ],
 targets: [
     .target(
@@ -134,6 +134,96 @@ print("Total clicks: \(stats.totalClicks)")
 print("Unique clicks: \(stats.uniqueClicks)")
 ```
 
+### 7. Push Notifications
+
+Register the device token so the backend can deliver push and in-app notifications:
+
+```swift
+import FirebaseMessaging
+
+// Register FCM token
+if let token = Messaging.messaging().fcmToken {
+    try await Journiq.push.registerFCMToken(token)
+}
+
+// Or register raw APNs token
+func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    Task {
+        try await Journiq.push.registerAPNsToken(deviceToken)
+    }
+}
+```
+
+Handle FCM data messages for in-app notification delivery:
+
+```swift
+// In your MessagingDelegate
+func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
+    let handled = Journiq.push.handleDataMessage(remoteMessage.appData)
+    if !handled {
+        // Your own message handling
+    }
+}
+```
+
+### 8. In-App Notifications
+
+#### Listen for new notifications (AsyncStream)
+
+```swift
+Task {
+    for await notification in Journiq.notifications.newNotifications {
+        print("New notification: \(notification.title)")
+    }
+}
+```
+
+#### Custom Display Delegate (recommended)
+
+Implement `JourniqNotificationDisplayDelegate` to control the UI:
+
+```swift
+class NotificationPresenter: JourniqNotificationDisplayDelegate {
+    func displayNotification(_ notification: InAppNotification) {
+        // Show your custom banner, sheet, or overlay
+        DispatchQueue.main.async {
+            let banner = MyBannerView(
+                title: notification.title,
+                body: notification.body,
+                imageURL: notification.imageUrl
+            )
+            banner.onTap = {
+                Task { try await Journiq.notifications.markAsRead(notification.id) }
+                Journiq.notifications.reportAction(notification, action: .tapped)
+            }
+            banner.onDismiss = {
+                Journiq.notifications.reportAction(notification, action: .dismissed)
+            }
+            banner.show()
+        }
+    }
+}
+
+// Register (e.g., in your root view controller's viewDidLoad)
+Journiq.notifications.displayDelegate = NotificationPresenter()
+```
+
+#### Fetch notifications
+
+```swift
+let response = try await Journiq.notifications.getAll(page: 1, limit: 20, unreadOnly: false)
+for notification in response.notifications {
+    print("\(notification.title) - read: \(notification.read)")
+}
+```
+
+#### Mark as read & unread count
+
+```swift
+try await Journiq.notifications.markAsRead(notificationId)
+let unread = try await Journiq.notifications.getUnreadCount()
+```
+
 ## API Reference
 
 ### `Journiq` (Class)
@@ -145,6 +235,8 @@ print("Unique clicks: \(stats.uniqueClicks)")
 | `links` | Link management module |
 | `events` | Event tracking module |
 | `analytics` | Analytics module |
+| `notifications` | In-app notifications module |
+| `push` | Push notification registration module |
 | `onAppForegrounded()` | Call from `applicationDidBecomeActive` |
 
 ### `Journiq.deepLinks` (JourniqDeepLinks)
@@ -175,6 +267,25 @@ print("Unique clicks: \(stats.uniqueClicks)")
 |--------|-------------|-------------|
 | `getLinkStats(linkId:)` | Secret | Get click stats for a link |
 | `getAppConfig()` | Any | Get app configuration |
+
+### `Journiq.notifications` (JourniqNotifications)
+
+| Method | Description |
+|--------|-------------|
+| `newNotifications` | AsyncStream emitting new notifications in real-time |
+| `getAll(page:limit:unreadOnly:)` | Fetch paginated notifications |
+| `markAsRead(_:)` | Mark a notification as read |
+| `getUnreadCount()` | Get the current unread count |
+| `displayDelegate` | Set to a `JourniqNotificationDisplayDelegate` for custom UI |
+| `reportAction(_:action:)` | Report user tap/dismiss action on a notification |
+
+### `Journiq.push` (JourniqPush)
+
+| Method | Description |
+|--------|-------------|
+| `registerFCMToken(_:)` | Register an FCM token with Journiq |
+| `registerAPNsToken(_:)` | Register a raw APNs device token |
+| `handleDataMessage(_:)` | Process an FCM data message. Returns `true` if handled. |
 
 ## Offline Support
 

@@ -66,6 +66,16 @@ public final class Journiq: @unchecked Sendable {
         JourniqAnalytics(sdk: current)
     }
 
+    /// In-app notifications module.
+    public static var notifications: JourniqNotifications {
+        JourniqNotifications(sdk: current)
+    }
+
+    /// Push registration and data message handling.
+    public static var push: JourniqPush {
+        JourniqPush(sdk: current)
+    }
+
     /// Call from applicationDidBecomeActive or sceneDidBecomeActive to trigger event flush.
     public static func onAppForegrounded() {
         shared?.eventQueue.onAppForegrounded()
