@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'JourniqSDK'
-  s.version          = '0.2.1'
+  s.version          = '0.2.3'
   s.summary          = 'Journiq iOS SDK — deep linking, attribution, analytics, in-app notifications, and push.'
   s.homepage         = 'https://github.com/journiq-dev/journiq-ios-sdk'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
