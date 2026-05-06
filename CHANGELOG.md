@@ -1,3 +1,12 @@
+## 0.3.0
+
+* **Universal Link Resolution**: New `resolveUniversalLink(_:source:)` method on `Journiq.deepLinks`
+  * Resolves a universal link URL to its deep link path, parameters, and UTM data via the Journiq API
+  * Tracks the link open server-side (no separate tracking call needed)
+  * Automatically stores attribution for subsequent event tracking
+* **New Models**: `ResolvedLink`, `LinkOpenSource` enum (`universalLink`, `appLink`, `scheme`, `deferred`)
+* Bumped deployment target to iOS 14.0
+
 ## 0.2.1
 
 * **In-App Notifications**: Real-time notification delivery via FCM data-only push

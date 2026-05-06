@@ -19,14 +19,14 @@ Add the package in Xcode:
    ```
    https://github.com/journiq-dev/journiq-ios-sdk
    ```
-3. Select version rule: **Up to Next Major** from `0.2.1`
+3. Select version rule: **Up to Next Major** from `0.3.0`
 4. Add `JourniqSDK` to your target
 
 Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/journiq-dev/journiq-ios-sdk", from: "0.2.1"),
+    .package(url: "https://github.com/journiq-dev/journiq-ios-sdk", from: "0.3.0"),
 ],
 targets: [
     .target(
@@ -76,22 +76,41 @@ Task {
 ### 3. Handle Universal Links
 
 ```swift
-// SwiftUI
+// SwiftUI — Resolve the universal link and get deep link data
 .onOpenURL { url in
-    if let parsed = Journiq.deepLinks.handleURL(url) {
-        let path = parsed.path           // e.g. "product/123"
-        let params = parsed.parameters    // query parameters
-        navigateTo(path, params: params)
+    Task {
+        do {
+            let resolved = try await Journiq.deepLinks.resolveUniversalLink(url)
+            // resolved.deepLinkPath — e.g. "product/123"
+            // resolved.parameters   — custom key-value pairs
+            // resolved.utmSource, .utmMedium, .utmCampaign...
+            navigateTo(resolved.deepLinkPath, params: resolved.parameters)
+        } catch {
+            // Fallback: parse locally (e.g. URL scheme links)
+            if let parsed = Journiq.deepLinks.handleURL(url) {
+                navigateTo(parsed.path, params: parsed.parameters)
+            }
+        }
     }
 }
 
 // UIKit (SceneDelegate)
 func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-    guard let url = userActivity.webpageURL,
-          let parsed = Journiq.deepLinks.handleURL(url) else { return }
-    navigateTo(parsed.path)
+    guard let url = userActivity.webpageURL else { return }
+    Task {
+        do {
+            let resolved = try await Journiq.deepLinks.resolveUniversalLink(url)
+            navigateTo(resolved.deepLinkPath)
+        } catch {
+            if let parsed = Journiq.deepLinks.handleURL(url) {
+                navigateTo(parsed.path)
+            }
+        }
+    }
 }
 ```
+
+> **Note**: `resolveUniversalLink` calls the server to resolve the short URL, tracks the open, and stores attribution automatically. Use `handleURL` as a local-only fallback for URL scheme links.
 
 ### 4. Track Events
 
@@ -244,7 +263,8 @@ let unread = try await Journiq.notifications.getUnreadCount()
 | Method | Description |
 |--------|-------------|
 | `checkDeferredDeepLink()` | Check for deferred deep link (first launch only) |
-| `handleURL(_:)` | Parse a deep link from an incoming URL |
+| `resolveUniversalLink(_:source:)` | Resolve a universal/app link URL via API (tracks open + stores attribution) |
+| `handleURL(_:)` | Parse a deep link locally from an incoming URL (no network call) |
 
 ### `Journiq.links` (JourniqLinks)
 
