@@ -28,6 +28,14 @@ public struct JourniqDeepLinks: Sendable {
 
             let result: MatchResult = try await sdk.apiClient.matchDeferredLink(request)
             sdk.storage.deferredLinkChecked = true
+
+            if result.matched {
+                JourniqAttribution.setAttribution(
+                    deepLinkId: result.deepLinkId,
+                    clickId: result.clickId
+                )
+            }
+
             return result
         } catch {
             return MatchResult(matched: false)
@@ -36,9 +44,13 @@ public struct JourniqDeepLinks: Sendable {
 
     /// Parse a deep link URL (Universal Link / custom scheme).
     ///
+    /// Extracts attribution parameters (jq_link, jq_click) and stores them
+    /// for automatic event attribution.
     /// - Parameter url: The incoming URL
     /// - Returns: Parsed deep link path and query parameters, or nil
     public func handleURL(_ url: URL) -> ParsedDeepLink? {
+        JourniqAttribution.extractFromURL(url)
+
         let path = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         let params = (components?.queryItems ?? []).reduce(into: [String: String]()) { dict, item in

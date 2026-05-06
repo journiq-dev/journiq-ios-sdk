@@ -96,6 +96,7 @@ public final class Journiq: @unchecked Sendable {
     /// Clear user identity (logout).
     public static func logout() {
         current.storage.userId = nil
+        JourniqAttribution.clear()
     }
 
     /// Set custom properties on the current user's profile.
