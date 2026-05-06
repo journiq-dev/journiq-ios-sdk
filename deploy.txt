@@ -1,7 +1,7 @@
 git tag -a v0.2.5 -m "Release 0.2.5"
 git push origin v0.2.5
 
-git tag -a 0.2.6 -m "Release 0.2.6" && git push origin 0.2.6
+git tag -a 0.3.0 -m "Release 0.3.0" && git push origin 0.3.0
 
  pod trunk register dev@journiq.io 'JourniqSDK'            
 pod trunk push JourniqSDK.podspec

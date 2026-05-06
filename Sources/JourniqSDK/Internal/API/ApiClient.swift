@@ -27,6 +27,10 @@ final class ApiClient: @unchecked Sendable {
         return try await post("/v1/sdk/deferred-links/match", body: request)
     }
 
+    func resolveLink(_ request: ResolveLinkRequest) async throws -> ResolvedLink {
+        return try await post("/v1/sdk/links/resolve", body: request)
+    }
+
     func createLink(_ request: LinkCreateRequest) async throws -> DeepLink {
         return try await post("/v1/sdk/links", body: request)
     }

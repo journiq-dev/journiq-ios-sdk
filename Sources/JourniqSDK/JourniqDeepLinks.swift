@@ -58,6 +58,35 @@ public struct JourniqDeepLinks: Sendable {
         }
         return ParsedDeepLink(path: path, parameters: params, url: url)
     }
+
+    /// Resolve a universal link URL to its deep link data via the Journiq API.
+    ///
+    /// This calls the server to resolve the short URL to its full deep link path,
+    /// parameters, and UTM data. It also tracks the link open server-side.
+    ///
+    /// On success, automatically stores the deep link ID for event attribution.
+    ///
+    /// - Parameters:
+    ///   - url: The universal link URL received by the app
+    ///   - source: How the link was opened (defaults to `.universalLink`)
+    /// - Returns: The resolved deep link data
+    public func resolveUniversalLink(_ url: URL, source: LinkOpenSource = .universalLink) async throws -> ResolvedLink {
+        let request = ResolveLinkRequest(
+            url: url.absoluteString,
+            source: source.rawValue,
+            userId: sdk.storage.userId,
+            deviceId: nil
+        )
+
+        let result = try await sdk.apiClient.resolveLink(request)
+
+        JourniqAttribution.setAttribution(
+            deepLinkId: result.deepLinkId,
+            clickId: nil
+        )
+
+        return result
+    }
 }
 
 /// A parsed deep link from an incoming URL.
