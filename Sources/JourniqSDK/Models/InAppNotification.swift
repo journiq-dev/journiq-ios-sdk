@@ -1,5 +1,13 @@
 import Foundation
 
+/// A button action on an in-app notification.
+public struct NotificationButton: Codable, Sendable {
+    public let label: String
+    public let style: String?
+    public let actionType: String
+    public let actionUrl: String?
+}
+
 /// A single in-app notification.
 public struct InAppNotification: Codable, Sendable, Identifiable {
     public let id: String
@@ -8,6 +16,9 @@ public struct InAppNotification: Codable, Sendable, Identifiable {
     public let imageUrl: String?
     public let actionUrl: String?
     public let actionType: String?
+    public let buttons: [NotificationButton]?
+    public let displayType: String?
+    public let webpageUrl: String?
     public let data: [String: String]?
     public let read: Bool
     public let readAt: String?
@@ -21,6 +32,14 @@ public struct InAppNotification: Codable, Sendable, Identifiable {
             "imageUrl": imageUrl,
             "actionUrl": actionUrl,
             "actionType": actionType,
+            "buttons": buttons?.map { [
+                "label": $0.label,
+                "style": $0.style,
+                "actionType": $0.actionType,
+                "actionUrl": $0.actionUrl,
+            ] },
+            "displayType": displayType,
+            "webpageUrl": webpageUrl,
             "data": data,
             "read": read,
             "readAt": readAt,
