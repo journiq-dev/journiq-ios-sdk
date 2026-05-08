@@ -130,13 +130,17 @@ final class ApiClient: @unchecked Sendable {
 
     // MARK: - Push Token
 
-    func registerDeviceToken(userId: String, token: String, platform: String) async throws {
+    func registerDeviceToken(userId: String, token: String, platform: String, deviceId: String? = nil) async throws {
         struct TokenRequest: Encodable {
             let userId: String
             let token: String
             let platform: String
+            let deviceId: String?
         }
-        let _: SuccessResponse = try await post("/v1/sdk/device-token", body: TokenRequest(userId: userId, token: token, platform: platform))
+        let _: SuccessResponse = try await post(
+            "/v1/sdk/device-token",
+            body: TokenRequest(userId: userId, token: token, platform: platform, deviceId: deviceId)
+        )
     }
 
     // MARK: - HTTP Helpers

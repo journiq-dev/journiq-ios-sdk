@@ -35,7 +35,7 @@ public final class JourniqPush: Sendable {
 
         Task {
             do {
-                try await sdk.apiClient.registerDeviceToken(userId: userId, token: token, platform: "ios")
+                try await sdk.apiClient.registerDeviceToken(userId: userId, token: token, platform: "ios", deviceId: sdk.storage.deviceId)
                 Self.logger.debug("FCM token registered")
             } catch {
                 Self.logger.warning("Failed to register FCM token: \(error.localizedDescription)")
