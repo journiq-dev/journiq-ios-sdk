@@ -30,6 +30,30 @@ public struct JourniqEvents: Sendable {
         sdk.eventQueue.enqueue(event: event)
     }
 
+    /// Track a screen view.
+    ///
+    /// Fires a `screen_view` event with `metadata["screen"]` set to `screenName`.
+    /// Use this to power page-specific automation triggers in the Journiq
+    /// dashboard (Trigger Event = `screen_view`, Page Name = the value you pass here).
+    /// - Parameters:
+    ///   - screenName: The name of the screen being viewed (e.g. "Home", "Checkout")
+    ///   - metadata: Optional additional key-value metadata
+    public func trackScreenView(
+        screenName: String,
+        metadata: [String: String]? = nil
+    ) {
+        var merged: [String: String] = ["screen": screenName]
+        if let extra = metadata {
+            merged.merge(extra) { _, new in new }
+        }
+        let event = TrackEvent(
+            eventName: "screen_view",
+            deepLinkId: nil,
+            metadata: merged
+        )
+        sdk.eventQueue.enqueue(event: event)
+    }
+
     /// Force flush all pending events immediately.
     public func flush() async {
         await sdk.eventQueue.flush()

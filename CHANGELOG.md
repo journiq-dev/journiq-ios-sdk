@@ -1,3 +1,7 @@
+## 0.6.3
+
+* Added `trackScreenView(screenName:, metadata:?)` on `JourniqEvents` — fires a `screen_view` event with `metadata["screen"]` set to the given screen name. Use this to power page-specific automation triggers in the Journiq dashboard.
+
 ## 0.4.0
 
 * **Deferred Deep Link Clipboard Attribution**: Reads `jq:<uuid>` token from `UIPasteboard` on first launch (clears after read) for deterministic attribution from the iOS interstitial. Triggers iOS 14+ "Pasted from" toast — standard tradeoff for clipboard-based attribution.
