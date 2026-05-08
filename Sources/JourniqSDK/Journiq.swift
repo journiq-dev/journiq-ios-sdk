@@ -84,12 +84,18 @@ public final class Journiq: @unchecked Sendable {
     // MARK: - Identity & User Properties
 
     /// Set user identity for cross-device attribution.
+    /// Events tracked before this call (under the anonymous device ID) are
+    /// automatically backfilled on the server to the resolved userId.
     /// - Parameter userId: A unique identifier for the user in your system.
     public static func setIdentity(_ userId: String) {
         let sdk = current
+        // Capture the current anonymousId before overwriting userId
+        let previousAnonymousId: String? = sdk.storage.userId == nil ? sdk.storage.anonymousId : nil
         sdk.storage.userId = userId
         Task {
-            _ = try? await sdk.apiClient.setIdentity(SetIdentityRequest(userId: userId))
+            _ = try? await sdk.apiClient.setIdentity(
+                SetIdentityRequest(userId: userId, anonymousId: previousAnonymousId)
+            )
         }
     }
 

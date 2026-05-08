@@ -25,6 +25,18 @@ final class JourniqStorage: @unchecked Sendable {
         set { defaults.set(newValue, forKey: Keys.userId) }
     }
 
+    /// A stable anonymous identifier generated on first launch.
+    /// Used as the userId for events before `identify()` is called.
+    /// Cleared on app reinstall (UserDefaults-backed, intentionally not in Keychain).
+    var anonymousId: String {
+        if let existing = defaults.string(forKey: Keys.anonymousId) {
+            return existing
+        }
+        let fresh = "anon_" + UUID().uuidString
+        defaults.set(fresh, forKey: Keys.anonymousId)
+        return fresh
+    }
+
     /// A stable per-install identifier. Stored in the Keychain
     /// (kSecAttrAccessibleAfterFirstUnlock) so it survives app uninstall
     /// and reinstall on the same device — letting the server replace the
@@ -57,6 +69,7 @@ final class JourniqStorage: @unchecked Sendable {
         static let deferredChecked = "journiq_deferred_checked"
         static let lastFlush = "journiq_last_flush"
         static let userId = "journiq_user_id"
+        static let anonymousId = "journiq_anonymous_id"
         static let deviceId = "journiq_device_id"
         static let all = [deferredChecked, lastFlush, userId]
     }

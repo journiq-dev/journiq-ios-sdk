@@ -49,6 +49,7 @@ struct EventCreatedResult: Decodable {
 
 struct SetIdentityRequest: Encodable {
     let userId: String
+    let anonymousId: String?
 }
 
 struct SetUserPropertiesRequest: Encodable {

@@ -40,7 +40,8 @@ final class EventQueue: @unchecked Sendable {
     }
 
     func enqueue(event: TrackEvent) {
-        let currentUserId = storage.userId
+        // Capture identity at enqueue time: real userId if identified, else stable anonymousId
+        let effectiveUserId = storage.userId ?? storage.anonymousId
         queue.async { [self] in
             enforceMaxSize()
 
@@ -49,7 +50,7 @@ final class EventQueue: @unchecked Sendable {
                 eventName: event.eventName,
                 deepLinkId: event.deepLinkId,
                 metadata: event.metadata,
-                userId: currentUserId,
+                userId: effectiveUserId,
                 occurredAt: ISO8601DateFormatter().string(from: event.occurredAt),
                 retryCount: 0,
                 createdAt: Date().timeIntervalSince1970
