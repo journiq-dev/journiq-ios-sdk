@@ -1,6 +1,10 @@
-# Journiq iOS SDK
+<p align="center">
+  <a href="https://getjourniq.com"><img src="./assets/journiq-logo.png" alt="Journiq" width="260"/></a>
+</p>
 
-Official iOS SDK for [Journiq](https://getjourniq.com) — deep linking, deferred deep links, attribution, event tracking, in-app notifications, and push for iOS apps.
+<h1 align="center">Journiq iOS SDK</h1>
+
+<p align="center">Official iOS SDK for <a href="https://getjourniq.com">Journiq</a> — deep linking, deferred deep links, attribution, event tracking, in-app notifications, and push for iOS apps.</p>
 
 ## Requirements
 
