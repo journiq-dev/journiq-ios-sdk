@@ -97,6 +97,34 @@ public final class JourniqNotifications: Sendable {
         try await sdk.apiClient.markNotificationRead(id: notificationId, userId: userId)
     }
 
+    /// Mark a notification as clicked. The first call increments
+    /// `stats.clicked` on the originating campaign/automation; subsequent
+    /// calls are server-side no-ops.
+    public func markAsClicked(_ notificationId: String) async throws {
+        guard let userId = sdk.storage.userId else {
+            throw JourniqError.noIdentity
+        }
+        try await sdk.apiClient.markNotificationClicked(id: notificationId, userId: userId)
+    }
+
+    /// Report a push notification open. Pass `campaignId` / `automationId`
+    /// extracted from the FCM data payload so server-side stats can attribute
+    /// the click to the originating send.
+    public func reportPushClick(
+        campaignId: String? = nil,
+        automationId: String? = nil,
+        notificationMessageId: String? = nil,
+    ) async throws {
+        guard let userId = sdk.storage.userId else { return }
+        if campaignId == nil && automationId == nil { return }
+        try await sdk.apiClient.reportPushClick(
+            userId: userId,
+            campaignId: campaignId,
+            automationId: automationId,
+            notificationMessageId: notificationMessageId,
+        )
+    }
+
     /// Get the current unread count.
     public func getUnreadCount() async throws -> Int {
         guard let userId = sdk.storage.userId else {

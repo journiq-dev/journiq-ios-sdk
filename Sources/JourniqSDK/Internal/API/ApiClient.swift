@@ -88,6 +88,41 @@ final class ApiClient: @unchecked Sendable {
         try validateResponse(response, data: data)
     }
 
+    func markNotificationClicked(id: String, userId: String) async throws {
+        let url = try buildURL("/v1/sdk/notifications/\(id)/clicked")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        applyHeaders(&request)
+        request.httpBody = try encoder.encode(["userId": userId])
+
+        let (data, response) = try await session.data(for: request)
+        try validateResponse(response, data: data)
+    }
+
+    func reportPushClick(
+        userId: String,
+        campaignId: String?,
+        automationId: String?,
+        notificationMessageId: String?,
+    ) async throws {
+        struct PushClickRequest: Encodable {
+            let userId: String
+            let campaignId: String?
+            let automationId: String?
+            let notificationMessageId: String?
+        }
+        let _: SuccessResponse = try await post(
+            "/v1/sdk/notifications/click",
+            body: PushClickRequest(
+                userId: userId,
+                campaignId: campaignId,
+                automationId: automationId,
+                notificationMessageId: notificationMessageId,
+            )
+        )
+    }
+
     func getUnreadNotificationCount(userId: String) async throws -> Int {
         let response: UnreadCountResponse = try await get("/v1/sdk/notifications/unread-count?userId=\(userId)")
         return response.count
