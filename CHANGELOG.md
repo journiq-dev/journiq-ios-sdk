@@ -1,5 +1,7 @@
 ## 0.3.0
 
+* **Deferred Deep Link Clipboard Attribution**: Reads `jq:<uuid>` token from `UIPasteboard` on first launch (clears after read) for deterministic attribution from the iOS interstitial. Triggers iOS 14+ "Pasted from" toast — standard tradeoff for clipboard-based attribution.
+* **Probabilistic Match Signals**: Match request now sends `timezone` (IANA), `language` (base code), `country` (locale region), and `deviceModel` (sysctl `hw.machine`) so the server-side probabilistic scorer has enough signal to clear the match threshold.
 * **Universal Link Resolution**: New `resolveUniversalLink(_:source:)` method on `Journiq.deepLinks`
   * Resolves a universal link URL to its deep link path, parameters, and UTM data via the Journiq API
   * Tracks the link open server-side (no separate tracking call needed)
