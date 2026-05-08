@@ -28,6 +28,7 @@ struct EventItem: Encodable {
     let deepLinkId: String?
     let metadata: [String: String]?
     let occurredAt: String
+    let userId: String?
 }
 
 struct ApiResponse<T: Decodable>: Decodable {

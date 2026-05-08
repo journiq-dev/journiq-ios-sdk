@@ -6,6 +6,7 @@ import Network
 final class EventQueue: @unchecked Sendable {
 
     private let apiClient: ApiClient
+    private let storage: JourniqStorage
     private let queue = DispatchQueue(label: "com.journiq.eventqueue", qos: .utility)
     private let cacheDir: URL
     private let monitor = NWPathMonitor()
@@ -17,8 +18,9 @@ final class EventQueue: @unchecked Sendable {
     private let flushIntervalSeconds: TimeInterval = 60
     private let eventExpirySeconds: TimeInterval = 7 * 24 * 60 * 60 // 7 days
 
-    init(apiClient: ApiClient) {
+    init(apiClient: ApiClient, storage: JourniqStorage) {
         self.apiClient = apiClient
+        self.storage = storage
 
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         self.cacheDir = caches.appendingPathComponent("journiq_events", isDirectory: true)
@@ -38,6 +40,7 @@ final class EventQueue: @unchecked Sendable {
     }
 
     func enqueue(event: TrackEvent) {
+        let currentUserId = storage.userId
         queue.async { [self] in
             enforceMaxSize()
 
@@ -46,6 +49,7 @@ final class EventQueue: @unchecked Sendable {
                 eventName: event.eventName,
                 deepLinkId: event.deepLinkId,
                 metadata: event.metadata,
+                userId: currentUserId,
                 occurredAt: ISO8601DateFormatter().string(from: event.occurredAt),
                 retryCount: 0,
                 createdAt: Date().timeIntervalSince1970
@@ -77,7 +81,8 @@ final class EventQueue: @unchecked Sendable {
                         eventName: entry.eventName,
                         deepLinkId: entry.deepLinkId,
                         metadata: entry.metadata,
-                        occurredAt: entry.occurredAt
+                        occurredAt: entry.occurredAt,
+                        userId: entry.userId
                     )
                 }
 
@@ -188,6 +193,7 @@ struct PendingEvent: Codable {
     let eventName: String
     let deepLinkId: String?
     let metadata: [String: String]?
+    let userId: String?
     let occurredAt: String
     var retryCount: Int
     let createdAt: TimeInterval

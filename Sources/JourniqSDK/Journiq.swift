@@ -23,7 +23,7 @@ public final class Journiq: @unchecked Sendable {
         self.apiClient = ApiClient(config: config)
         self.fingerprint = DeviceFingerprint()
         self.storage = JourniqStorage()
-        self.eventQueue = EventQueue(apiClient: apiClient)
+        self.eventQueue = EventQueue(apiClient: apiClient, storage: storage)
         self.eventQueue.start()
     }
 
