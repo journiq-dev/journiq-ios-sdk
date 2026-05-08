@@ -10,6 +10,13 @@ struct MatchRequest: Encodable {
     let screenHeight: Int
     let platform: String = "ios"
     let installReferrer: String?
+    // Probabilistic match signals (all optional — server scores whichever are present)
+    let clipboardToken: String?
+    let country: String?
+    let timezone: String?
+    let language: String?
+    let deviceFamily: String?
+    let deviceModel: String?
 }
 
 struct BatchEventsRequest: Encodable {

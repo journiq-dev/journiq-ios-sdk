@@ -16,6 +16,7 @@ public struct JourniqDeepLinks: Sendable {
 
         do {
             let ip = await sdk.fingerprint.getPublicIPAddress()
+            let clipboardToken = await MainActor.run { sdk.fingerprint.consumeClipboardToken() }
 
             let request = MatchRequest(
                 ipAddress: ip,
@@ -23,7 +24,13 @@ public struct JourniqDeepLinks: Sendable {
                 osVersion: sdk.fingerprint.osVersion,
                 screenWidth: sdk.fingerprint.screenWidth,
                 screenHeight: sdk.fingerprint.screenHeight,
-                installReferrer: nil
+                installReferrer: nil,
+                clipboardToken: clipboardToken,
+                country: sdk.fingerprint.country,
+                timezone: sdk.fingerprint.timezone,
+                language: sdk.fingerprint.language,
+                deviceFamily: nil,
+                deviceModel: sdk.fingerprint.deviceModel
             )
 
             let result: MatchResult = try await sdk.apiClient.matchDeferredLink(request)
